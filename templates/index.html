@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Utility Bill Forge - local-first utility bill analyzer</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">&#9881;</span>
+    <div>
+      <h1>Utility Bill Forge</h1>
+      <p class="tagline">Paste a bill. Find out what you actually pay, what is wrong with it, and what to do next.</p>
+    </div>
+  </div>
+  <div class="topmeta">
+    <span class="pill pill-ok">Local only</span>
+    <span class="pill">No API keys</span>
+    <span class="pill">No network calls</span>
+  </div>
+</header>
+
+<main>
+  <section class="panel input-panel">
+    <div class="panel-head">
+      <h2>1. Paste your bill</h2>
+      <button id="toggle-samples" class="btn btn-ghost" type="button">Load a sample</button>
+    </div>
+
+    <div id="sample-drawer" class="sample-drawer hidden">
+      <p class="hint">Synthetic bills that exercise every part of the analyzer. Click one to load it.</p>
+      <div id="sample-list" class="sample-list"></div>
+    </div>
+
+    <label class="field-label" for="bill-text">Bill text</label>
+    <textarea id="bill-text" spellcheck="false" placeholder="Paste the bill text here - the line items matter most.
+
+Try to include:
+  - the line items (charges, taxes, riders)
+  - total usage (kWh, therms, gallons)
+  - the total amount due
+
+Works on electricity, gas and water bills."></textarea>
+
+    <div class="controls">
+      <div class="control">
+        <label class="field-label" for="utility">Utility type</label>
+        <select id="utility">
+          {% for u in utilities %}<option value="{{ u.id }}">{{ u.label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="control">
+        <label class="field-label" for="customer-class">Customer type</label>
+        <select id="customer-class">
+          {% for c in customer_classes %}<option value="{{ c.id }}">{{ c.label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="control">
+        <label class="field-label" for="profile">Scoring profile</label>
+        <select id="profile">
+          {% for p in profiles %}<option value="{{ p.id }}">{{ p.label }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="analyze" class="btn btn-primary" type="button">Analyze bill</button>
+      <button id="clear" class="btn btn-ghost" type="button">Clear</button>
+      <span id="status" class="status"></span>
+    </div>
+
+    <p class="footnote">
+      Paste multiple bills separated by a line of dashes to compare periods.
+      Everything runs in this browser session against a local engine - your bill text is never uploaded.
+    </p>
+  </section>
+
+  <section id="results" class="hidden">
+    <div class="panel score-panel">
+      <div class="score-header">
+        <div class="score-block">
+          <div id="score-value" class="score-value">--</div>
+          <div class="score-caption">Bill health score</div>
+        </div>
+        <div class="verdict-block">
+          <div id="verdict-pill" class="verdict-pill">--</div>
+          <p id="verdict-blurb" class="verdict-blurb"></p>
+          <div id="bill-meta" class="bill-meta"></div>
+        </div>
+      </div>
+      <div id="axis-row" class="axis-row"></div>
+      <div id="caps" class="caps"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>2. Where the money goes</h2></div>
+      <div id="breakdown"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>3. What is wrong</h2>
+        <div class="filter-row" id="finding-filters"></div>
+      </div>
+      <div id="findings"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>4. What to do about it</h2></div>
+      <div id="savings"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>5. What to ask the utility</h2></div>
+      <div id="call-script"></div>
+    </div>
+
+    <div id="comparison-panel" class="panel hidden">
+      <div class="panel-head"><h2>6. Comparing your bills</h2></div>
+      <div id="comparison"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>Export</h2></div>
+      <div class="export-row">
+        <a id="export-md" class="btn btn-ghost" href="#" download>Download Markdown</a>
+        <a id="export-json" class="btn btn-ghost" href="#" download>Download JSON</a>
+        <span class="hint">Exports include the full breakdown, every finding, and the savings scenarios.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel history-panel">
+    <div class="panel-head">
+      <h2>Past analyses</h2>
+      <button id="refresh-history" class="btn btn-ghost" type="button">Refresh</button>
+    </div>
+    <div id="history"></div>
+  </section>
+</main>
+
+<footer>
+  <p>Utility Bill Forge - runs entirely on your machine. Reference rate bands are approximate US averages, not live tariff data; treat them as a sanity check, not a quote.</p>
+</footer>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
